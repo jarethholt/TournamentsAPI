@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using TournamentsAPI.API.Data;
 namespace TournamentsAPI.API;
 
 public class Program
@@ -5,6 +8,8 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddDbContext<TournamentsContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("TournamentsContext") ?? throw new InvalidOperationException("Connection string 'TournamentsContext' not found.")));
 
         // Add services to the container.
 
