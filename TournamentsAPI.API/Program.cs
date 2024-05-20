@@ -12,7 +12,10 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddDbContext<TournamentsContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("TournamentsContext") ?? throw new InvalidOperationException("Connection string 'TournamentsContext' not found.")));
+            options.UseSqlServer(
+                builder.Configuration.GetConnectionString("TournamentsContext")
+                ?? throw new InvalidOperationException("Connection string 'TournamentsContext' not found.")));
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // Add services to the container.
         builder.Services.AddControllers(opt => opt.ReturnHttpNotAcceptable = true)
@@ -21,8 +24,6 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-
-        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         var app = builder.Build();
 
