@@ -16,25 +16,28 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 
     // GET: api/Tournaments
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentDTO>>> GetAllTournaments() =>
-        Ok(_mapper.Map<IEnumerable<TournamentDTO>>(await _unitOfWork.TournamentRepository.GetAllAsync()));
+    public async Task<ActionResult<IEnumerable<TournamentWithIdDTO>>> GetAllTournaments() =>
+        Ok(_mapper.Map<IEnumerable<TournamentWithIdDTO>>(await _unitOfWork.TournamentRepository.GetAllAsync()));
 
     // GET: api/Tournaments/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<TournamentDTO>> GetTournamentById(int id)
+    public async Task<ActionResult<TournamentWithIdDTO>> GetTournamentById(int id)
     {
         var tournament = await _unitOfWork.TournamentRepository.GetAsync(id);
 
         if (tournament is null)
             return NotFound();
-        return Ok(_mapper.Map<TournamentDTO>(tournament));
+        return Ok(_mapper.Map<TournamentWithIdDTO>(tournament));
     }
 
     // PUT: api/Tournaments/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutTournament(int id, TournamentDTO tournamentDTO)
+    public async Task<IActionResult> PutTournament(int id, TournamentPostDTO tournamentDTO)
     {
+        if (!(await TournamentExists(id)))
+            return NotFound();
+
         _unitOfWork.TournamentRepository.Update(_mapper.Map<Tournament>(tournamentDTO));
 
         try
@@ -55,12 +58,13 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     // POST: api/Tournaments
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<TournamentDTO>> PostTournament(TournamentDTO tournamentDTO)
+    public async Task<ActionResult<TournamentPostDTO>> PostTournament(TournamentPostDTO tournamentDTO)
     {
         var tournament = _mapper.Map<Tournament>(tournamentDTO);
         _unitOfWork.TournamentRepository.Add(tournament);
         await _unitOfWork.CompleteAsync();
-        return CreatedAtAction(nameof(GetTournamentById), new { id = tournament.Id }, tournamentDTO);
+        var tournamentOut = _mapper.Map<TournamentWithIdDTO>(tournament);
+        return CreatedAtAction(nameof(GetTournamentById), new { id = tournamentOut.Id }, tournamentOut);
     }
 
     // DELETE: api/Tournaments/5
