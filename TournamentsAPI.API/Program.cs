@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TournamentsAPI.API.Data;
 using TournamentsAPI.API.Extensions;
 using TournamentsAPI.Core.Repositories;
+using TournamentsAPI.Data.Data;
 using TournamentsAPI.Data.Repositories;
 
 namespace TournamentsAPI.API;
@@ -16,6 +17,7 @@ public class Program
                 builder.Configuration.GetConnectionString("TournamentsContext")
                 ?? throw new InvalidOperationException("Connection string 'TournamentsContext' not found.")));
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        builder.Services.AddAutoMapper(typeof(TournamentMappings));
 
         // Add services to the container.
         builder.Services.AddControllers(opt => opt.ReturnHttpNotAcceptable = true)
