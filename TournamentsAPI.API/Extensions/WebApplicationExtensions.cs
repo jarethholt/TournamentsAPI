@@ -5,10 +5,10 @@ namespace TournamentsAPI.API.Extensions;
 
 public static class WebApplicationExtensions
 {
-    public static Task<int> SeedDataAsync(this WebApplication app)
+    public static async Task SeedDataAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<TournamentsContext>();
-        return SeedData.SeedDataAsync(context);
+        await SeedData.SeedDataAsync(context);
     }
 }
