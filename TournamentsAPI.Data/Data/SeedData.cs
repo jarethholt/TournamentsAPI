@@ -25,9 +25,9 @@ public static class SeedData
             ]}
     ];
 
-    public static async void SeedDataAsync(TournamentsContext context)
+    public static Task<int> SeedDataAsync(TournamentsContext context)
     {
         context.AddRange(tournaments);
-        await context.SaveChangesAsync();
+        return context.SaveChangesAsync();
     }
 }

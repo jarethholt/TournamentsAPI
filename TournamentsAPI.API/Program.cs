@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using TournamentsAPI.API.Data;
+using TournamentsAPI.API.Extensions;
+
 namespace TournamentsAPI.API;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddDbContext<TournamentsContext>(options =>
@@ -27,6 +28,8 @@ public class Program
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+            // Seed the database
+            await app.SeedDataAsync();
         }
 
         app.UseHttpsRedirection();
