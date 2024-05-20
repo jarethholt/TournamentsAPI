@@ -12,7 +12,9 @@ public class TournamentMappings : Profile
             .ReverseMap();
         CreateMap<Tournament, TournamentWithIdDTO>()
             .ReverseMap();
-        CreateMap<Game, GameDTO>()
+        CreateMap<Game, GamePostDTO>()
+            .ReverseMap();
+        CreateMap<Game, GameWithIdDTO>()
             .ReverseMap();
     }
 }

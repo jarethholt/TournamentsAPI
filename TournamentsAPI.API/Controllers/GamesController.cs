@@ -16,24 +16,27 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
 
     // GET: api/Games
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GameDTO>>> GetAllGames() =>
-        Ok(_mapper.Map<IEnumerable<GameDTO>>(await _unitOfWork.GameRepository.GetAllAsync()));
+    public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllGames() =>
+        Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _unitOfWork.GameRepository.GetAllAsync()));
 
     // GET: api/Games/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<GameDTO>> GetGameById(int id)
+    public async Task<ActionResult<GameWithIdDTO>> GetGameById(int id)
     {
         var game = await _unitOfWork.GameRepository.GetAsync(id);
         if (game is null)
             return NotFound();
-        return Ok(_mapper.Map<GameDTO>(game));
+        return Ok(_mapper.Map<GameWithIdDTO>(game));
     }
 
     // PUT: api/Games/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutGame(int id, GameDTO gameDTO)
+    public async Task<IActionResult> PutGame(int id, GamePostDTO gameDTO)
     {
+        if (!(await GameExists(id)))
+            return NotFound();
+
         _unitOfWork.GameRepository.Update(_mapper.Map<Game>(gameDTO));
 
         try
@@ -53,12 +56,13 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     // POST: api/Games
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<GameDTO>> PostGame(GameDTO gameDTO)
+    public async Task<ActionResult<GameWithIdDTO>> PostGame(GamePostDTO gameDTO)
     {
         var game = _mapper.Map<Game>(gameDTO);
         _unitOfWork.GameRepository.Add(game);
         await _unitOfWork.CompleteAsync();
-        return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, gameDTO);
+        var gameOut = _mapper.Map<GameWithIdDTO>(game);
+        return CreatedAtAction(nameof(GetGameById), new { id = gameOut.Id }, gameOut);
     }
 
     // DELETE: api/Games/5
