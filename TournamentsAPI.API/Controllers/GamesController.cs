@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TournamentsAPI.API.Data;
+using TournamentsAPI.Core.DTOs;
 using TournamentsAPI.Core.Entities;
 using TournamentsAPI.Core.Repositories;
 
@@ -8,34 +9,32 @@ namespace TournamentsAPI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class GamesController(IUnitOfWork unitOfWork) : ControllerBase
+public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IMapper _mapper = mapper;
 
     // GET: api/Games
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Game>>> GetAllGames() =>
-        Ok(await _unitOfWork.GameRepository.GetAllAsync());
+    public async Task<ActionResult<IEnumerable<GameDTO>>> GetAllGames() =>
+        Ok(_mapper.Map<IEnumerable<GameDTO>>(await _unitOfWork.GameRepository.GetAllAsync()));
 
     // GET: api/Games/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Game>> GetGameById(int id)
+    public async Task<ActionResult<GameDTO>> GetGameById(int id)
     {
         var game = await _unitOfWork.GameRepository.GetAsync(id);
         if (game is null)
             return NotFound();
-        return Ok(game);
+        return Ok(_mapper.Map<GameDTO>(game));
     }
 
     // PUT: api/Games/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutGame(int id, Game game)
+    public async Task<IActionResult> PutGame(int id, GameDTO gameDTO)
     {
-        if (id != game.Id)
-            return BadRequest();
-
-        _unitOfWork.GameRepository.Update(game);
+        _unitOfWork.GameRepository.Update(_mapper.Map<Game>(gameDTO));
 
         try
         {
@@ -54,11 +53,12 @@ public class GamesController(IUnitOfWork unitOfWork) : ControllerBase
     // POST: api/Games
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Game>> PostGame(Game game)
+    public async Task<ActionResult<GameDTO>> PostGame(GameDTO gameDTO)
     {
+        var game = _mapper.Map<Game>(gameDTO);
         _unitOfWork.GameRepository.Add(game);
         await _unitOfWork.CompleteAsync();
-        return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, game);
+        return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, gameDTO);
     }
 
     // DELETE: api/Games/5
