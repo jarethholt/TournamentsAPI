@@ -18,8 +18,11 @@ public class GameRepository(TournamentsContext context) : IGameRepository
     public async Task<IEnumerable<Game>> GetAllAsync() =>
         await _context.Game.ToListAsync();
 
-    public async Task<Game?> GetAsync(int id) =>
+    public async Task<Game?> GetByIdAsync(int id) =>
         await _context.Game.FirstOrDefaultAsync(g => g.Id == id);
+
+    public async Task<Game?> GetByTitleAsync(string title) =>
+        await _context.Game.FirstOrDefaultAsync(g => g.Title == title);
 
     public void Remove(Game game) =>
         _context.Remove(game);

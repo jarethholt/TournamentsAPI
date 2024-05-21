@@ -5,7 +5,7 @@ namespace TournamentsAPI.Data.Data;
 
 public static class SeedData
 {
-    private static List<Tournament> tournaments = [
+    private static readonly List<Tournament> tournaments = [
         new() { Title = "2023 World Women's Handball Championship", StartDate = new(2023, 11, 29, 00, 00, 00), Games = [
             new() { Title = "Quarterfinal 2-1 (France) vs 4-2 (Czech Republic)", Time = new(2023, 12, 12, 17, 30, 00) },
             new() { Title = "Quarterfinal 4-1 (Netherlands) vs 2-2 (Norway)", Time = new(2023, 12, 12, 20, 30, 00) },

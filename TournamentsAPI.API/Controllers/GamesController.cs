@@ -22,10 +22,19 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
         Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _repository.GetAllAsync()));
 
     // GET: api/Games/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<GameWithIdDTO>> GetGameById(int id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<GameWithIdDTO>> GetGameById([FromRoute] int id)
     {
-        var game = await _repository.GetAsync(id);
+        var game = await _repository.GetByIdAsync(id);
+        if (game is null)
+            return NotFound();
+        return Ok(_mapper.Map<GameWithIdDTO>(game));
+    }
+
+    [HttpGet("{title:string}")]
+    public async Task<ActionResult<GameWithIdDTO>> GetGameByTitle([FromRoute] string title)
+    {
+        var game = await _repository.GetByTitleAsync(title);
         if (game is null)
             return NotFound();
         return Ok(_mapper.Map<GameWithIdDTO>(game));
@@ -34,7 +43,7 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     // PUT: api/Games/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutGame(int id, GamePostDTO gameDTO)
+    public async Task<IActionResult> PutGame([FromRoute] int id, [FromBody] GamePostDTO gameDTO)
     {
         if (!(await GameExists(id)))
             return NotFound();
@@ -62,7 +71,7 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     // POST: api/Games
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<GameWithIdDTO>> PostGame(GamePostDTO gameDTO)
+    public async Task<ActionResult<GameWithIdDTO>> PostGame([FromBody] GamePostDTO gameDTO)
     {
         if (!(await TournamentExists(gameDTO.TournamentId)))
             return BadRequest($"Tournament with Id {gameDTO.TournamentId} not found");
@@ -76,9 +85,9 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
 
     // DELETE: api/Games/5
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteGame(int id)
+    public async Task<IActionResult> DeleteGame([FromRoute] int id)
     {
-        var game = await _repository.GetAsync(id);
+        var game = await _repository.GetByIdAsync(id);
         if (game is null)
             return NotFound();
 
@@ -88,9 +97,9 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     }
 
     [HttpPatch("{id}")]
-    public async Task<ActionResult<GameWithIdDTO>> PatchGame(int id, JsonPatchDocument<GamePostDTO> patchForDTO)
+    public async Task<ActionResult<GameWithIdDTO>> PatchGame([FromRoute] int id, [FromBody] JsonPatchDocument<GamePostDTO> patchForDTO)
     {
-        var game = await _repository.GetAsync(id);
+        var game = await _repository.GetByIdAsync(id);
         if (game is null)
             return NotFound();
 

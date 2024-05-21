@@ -23,7 +23,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 
     // GET: api/Tournaments/5
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTournamentById(int id, bool includeGames = false)
+    public async Task<IActionResult> GetTournamentById([FromRoute] int id, [FromQuery] bool includeGames = false)
     {
         var tournament = await _repository.GetAsync(id, includeGames);
         if (tournament is null)
@@ -38,7 +38,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     // PUT: api/Tournaments/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutTournament(int id, TournamentPostDTO tournamentDTO)
+    public async Task<IActionResult> PutTournament([FromRoute] int id, [FromBody] TournamentPostDTO tournamentDTO)
     {
         if (!(await TournamentExists(id)))
             return NotFound();
@@ -65,7 +65,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     // POST: api/Tournaments
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<TournamentPostDTO>> PostTournament(TournamentPostDTO tournamentDTO)
+    public async Task<ActionResult<TournamentPostDTO>> PostTournament([FromBody] TournamentPostDTO tournamentDTO)
     {
         var tournament = _mapper.Map<Tournament>(tournamentDTO);
         _repository.Add(tournament);
@@ -76,7 +76,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 
     // DELETE: api/Tournaments/5
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTournament(int id)
+    public async Task<IActionResult> DeleteTournament([FromRoute] int id)
     {
         var tournament = await _repository.GetAsync(id, includeGames: false);
         if (tournament is null)
@@ -88,7 +88,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     }
 
     [HttpPatch("{id}")]
-    public async Task<ActionResult<TournamentWithIdDTO>> PatchTournament(int id, JsonPatchDocument<TournamentPostDTO> patchForDTO)
+    public async Task<ActionResult<TournamentWithIdDTO>> PatchTournament([FromRoute] int id, [FromBody] JsonPatchDocument<TournamentPostDTO> patchForDTO)
     {
         var tournament = await _repository.GetAsync(id, includeGames: false);
         if (tournament is null)
