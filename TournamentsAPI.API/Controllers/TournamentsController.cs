@@ -23,13 +23,16 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 
     // GET: api/Tournaments/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<TournamentWithIdDTO>> GetTournamentById(int id)
+    public async Task<IActionResult> GetTournamentById(int id, bool includeGames = false)
     {
-        var tournament = await _repository.GetAsync(id);
-
+        var tournament = await _repository.GetAsync(id, includeGames);
         if (tournament is null)
             return NotFound();
-        return Ok(_mapper.Map<TournamentWithIdDTO>(tournament));
+        var tournamentOut
+            = includeGames
+            ? _mapper.Map<TournamentWithGamesDTO>(tournament)
+            : _mapper.Map<TournamentWithIdDTO>(tournament);
+        return Ok(tournamentOut);
     }
 
     // PUT: api/Tournaments/5
@@ -75,7 +78,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTournament(int id)
     {
-        var tournament = await _repository.GetAsync(id);
+        var tournament = await _repository.GetAsync(id, includeGames: false);
         if (tournament is null)
             return NotFound();
 
@@ -87,7 +90,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     [HttpPatch("{id}")]
     public async Task<ActionResult<TournamentWithIdDTO>> PatchTournament(int id, JsonPatchDocument<TournamentPostDTO> patchForDTO)
     {
-        var tournament = await _repository.GetAsync(id);
+        var tournament = await _repository.GetAsync(id, includeGames: false);
         if (tournament is null)
             return NotFound();
 

@@ -10,14 +10,11 @@ public class TournamentMappings : Profile
 {
     public TournamentMappings()
     {
-        CreateMap<Tournament, TournamentPostDTO>()
-            .ReverseMap();
-        CreateMap<Tournament, TournamentWithIdDTO>()
-            .ReverseMap();
-        CreateMap<Game, GamePostDTO>()
-            .ReverseMap();
-        CreateMap<Game, GameWithIdDTO>()
-            .ReverseMap();
+        CreateMap<Tournament, TournamentPostDTO>().ReverseMap();
+        CreateMap<Tournament, TournamentWithIdDTO>().ReverseMap();
+        CreateMap<Tournament, TournamentWithGamesDTO>().ReverseMap();
+        CreateMap<Game, GamePostDTO>().ReverseMap();
+        CreateMap<Game, GameWithIdDTO>().ReverseMap();
         CreateMap<JsonPatchDocument<TournamentPostDTO>, JsonPatchDocument<Tournament>>();
         CreateMap<Operation<TournamentPostDTO>, Operation<Tournament>>();
         CreateMap<JsonPatchDocument<GamePostDTO>, JsonPatchDocument<Game>>();

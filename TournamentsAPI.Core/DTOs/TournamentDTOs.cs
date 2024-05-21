@@ -11,3 +11,8 @@ public class TournamentWithIdDTO : TournamentPostDTO
     public int Id { get; set; }
     public DateTime EndDate => StartDate.AddMonths(3);
 }
+
+public class TournamentWithGamesDTO : TournamentWithIdDTO
+{
+    public ICollection<GameWithIdDTO> Games { get; set; } = [];
+}
