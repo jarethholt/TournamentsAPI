@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TournamentsAPI.Core.DTOs;
@@ -78,6 +79,24 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
         _unitOfWork.GameRepository.Remove(game);
         await _unitOfWork.CompleteAsync();
         return NoContent();
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<ActionResult<GameWithIdDTO>> PatchGame(int id, JsonPatchDocument<GamePostDTO> patchForDTO)
+    {
+        var game = await _unitOfWork.GameRepository.GetAsync(id);
+        if (game is null)
+            return NotFound();
+
+
+        var patch = _mapper.Map<JsonPatchDocument<Game>>(patchForDTO);
+        patch.ApplyTo(game, ModelState);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        _unitOfWork.GameRepository.Update(game);
+        await _unitOfWork.CompleteAsync();
+        return new ObjectResult(_mapper.Map<GameWithIdDTO>(game));
     }
 
     private async Task<bool> GameExists(int id) =>

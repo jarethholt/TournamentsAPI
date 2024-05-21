@@ -20,5 +20,7 @@ public class TournamentMappings : Profile
             .ReverseMap();
         CreateMap<JsonPatchDocument<TournamentPostDTO>, JsonPatchDocument<Tournament>>();
         CreateMap<Operation<TournamentPostDTO>, Operation<Tournament>>();
+        CreateMap<JsonPatchDocument<GamePostDTO>, JsonPatchDocument<Game>>();
+        CreateMap<Operation<GamePostDTO>, Operation<Game>>();
     }
 }
