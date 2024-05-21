@@ -37,7 +37,9 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
         if (!(await GameExists(id)))
             return NotFound();
 
-        _unitOfWork.GameRepository.Update(_mapper.Map<Game>(gameDTO));
+        var game = _mapper.Map<Game>(gameDTO);
+        game.Id = id;
+        _unitOfWork.GameRepository.Update(game);
 
         try
         {

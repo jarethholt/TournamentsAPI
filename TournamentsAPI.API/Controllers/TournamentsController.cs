@@ -38,7 +38,9 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
         if (!(await TournamentExists(id)))
             return NotFound();
 
-        _unitOfWork.TournamentRepository.Update(_mapper.Map<Tournament>(tournamentDTO));
+        var tournament = _mapper.Map<Tournament>(tournamentDTO);
+        tournament.Id = id;
+        _unitOfWork.TournamentRepository.Update(tournament);
 
         try
         {
