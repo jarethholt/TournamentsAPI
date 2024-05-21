@@ -18,8 +18,8 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 
     // GET: api/Tournaments
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentWithIdDTO>>> GetAllTournaments() =>
-        Ok(_mapper.Map<IEnumerable<TournamentWithIdDTO>>(await _repository.GetAllAsync()));
+    public async Task<ActionResult<IEnumerable<TournamentWithIdDTO>>> GetAllTournaments([FromQuery] bool sort = true) =>
+        Ok(_mapper.Map<IEnumerable<TournamentWithIdDTO>>(await _repository.GetAllAsync(sort)));
 
     // GET: api/Tournaments/5
     [HttpGet("{id}")]

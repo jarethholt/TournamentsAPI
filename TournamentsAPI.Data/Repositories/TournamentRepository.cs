@@ -16,8 +16,13 @@ public class TournamentRepository(TournamentsContext context) : ITournamentRepos
     public async Task<bool> AnyAsync(int id) =>
         await _dbset.AnyAsync(t => t.Id == id);
 
-    public async Task<IEnumerable<Tournament>> GetAllAsync() =>
-        await _dbset.ToListAsync();
+    public async Task<IEnumerable<Tournament>> GetAllAsync(bool sort)
+    {
+        IQueryable<Tournament> query = _dbset;
+        if (sort)
+            query = query.OrderBy(t => t.StartDate);
+        return await query.ToListAsync();
+    }
 
     public async Task<Tournament?> GetAsync(int id, bool includeGames = false)
     {

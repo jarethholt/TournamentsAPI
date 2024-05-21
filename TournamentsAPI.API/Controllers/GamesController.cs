@@ -18,8 +18,12 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
 
     // GET: api/Games
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllGames() =>
-        Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _repository.GetAllAsync()));
+    public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllGames([FromQuery] bool sort = true) =>
+        Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _repository.GetAllAsync(sort)));
+
+    [HttpGet("Tournament/{tournamentId:int}")]
+    public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllFromTournament([FromRoute] int tournamentId, [FromQuery] bool sort = true) =>
+        Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _repository.GetAllFromTournament(tournamentId, sort)));
 
     // GET: api/Games/5
     [HttpGet("{id:int}")]
@@ -31,7 +35,7 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
         return Ok(_mapper.Map<GameWithIdDTO>(game));
     }
 
-    [HttpGet("{title:string}")]
+    [HttpGet("{title}")]
     public async Task<ActionResult<GameWithIdDTO>> GetGameByTitle([FromRoute] string title)
     {
         var game = await _repository.GetByTitleAsync(title);
