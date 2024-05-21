@@ -14,17 +14,18 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
+    private readonly ITournamentRepository _repository = unitOfWork.TournamentRepository;
 
     // GET: api/Tournaments
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TournamentWithIdDTO>>> GetAllTournaments() =>
-        Ok(_mapper.Map<IEnumerable<TournamentWithIdDTO>>(await _unitOfWork.TournamentRepository.GetAllAsync()));
+        Ok(_mapper.Map<IEnumerable<TournamentWithIdDTO>>(await _repository.GetAllAsync()));
 
     // GET: api/Tournaments/5
     [HttpGet("{id}")]
     public async Task<ActionResult<TournamentWithIdDTO>> GetTournamentById(int id)
     {
-        var tournament = await _unitOfWork.TournamentRepository.GetAsync(id);
+        var tournament = await _repository.GetAsync(id);
 
         if (tournament is null)
             return NotFound();
@@ -41,7 +42,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 
         var tournament = _mapper.Map<Tournament>(tournamentDTO);
         tournament.Id = id;
-        _unitOfWork.TournamentRepository.Update(tournament);
+        _repository.Update(tournament);
 
         try
         {
@@ -64,7 +65,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     public async Task<ActionResult<TournamentPostDTO>> PostTournament(TournamentPostDTO tournamentDTO)
     {
         var tournament = _mapper.Map<Tournament>(tournamentDTO);
-        _unitOfWork.TournamentRepository.Add(tournament);
+        _repository.Add(tournament);
         await _unitOfWork.CompleteAsync();
         var tournamentOut = _mapper.Map<TournamentWithIdDTO>(tournament);
         return CreatedAtAction(nameof(GetTournamentById), new { id = tournamentOut.Id }, tournamentOut);
@@ -74,11 +75,11 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTournament(int id)
     {
-        var tournament = await _unitOfWork.TournamentRepository.GetAsync(id);
+        var tournament = await _repository.GetAsync(id);
         if (tournament is null)
             return NotFound();
 
-        _unitOfWork.TournamentRepository.Remove(tournament);
+        _repository.Remove(tournament);
         await _unitOfWork.CompleteAsync();
         return NoContent();
     }
@@ -86,7 +87,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     [HttpPatch("{id}")]
     public async Task<ActionResult<TournamentWithIdDTO>> PatchTournament(int id, JsonPatchDocument<TournamentPostDTO> patchForDTO)
     {
-        var tournament = await _unitOfWork.TournamentRepository.GetAsync(id);
+        var tournament = await _repository.GetAsync(id);
         if (tournament is null)
             return NotFound();
 
@@ -96,11 +97,11 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        _unitOfWork.TournamentRepository.Update(tournament);
+        _repository.Update(tournament);
         await _unitOfWork.CompleteAsync();
         return new ObjectResult(_mapper.Map<TournamentWithIdDTO>(tournament));
     }
 
     private async Task<bool> TournamentExists(int id) =>
-        await _unitOfWork.TournamentRepository.AnyAsync(id);
+        await _repository.AnyAsync(id);
 }

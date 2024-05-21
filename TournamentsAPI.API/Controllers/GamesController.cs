@@ -14,17 +14,18 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
+    private readonly IGameRepository _repository = unitOfWork.GameRepository;
 
     // GET: api/Games
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllGames() =>
-        Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _unitOfWork.GameRepository.GetAllAsync()));
+        Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _repository.GetAllAsync()));
 
     // GET: api/Games/5
     [HttpGet("{id}")]
     public async Task<ActionResult<GameWithIdDTO>> GetGameById(int id)
     {
-        var game = await _unitOfWork.GameRepository.GetAsync(id);
+        var game = await _repository.GetAsync(id);
         if (game is null)
             return NotFound();
         return Ok(_mapper.Map<GameWithIdDTO>(game));
@@ -37,10 +38,12 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     {
         if (!(await GameExists(id)))
             return NotFound();
+        if (!(await TournamentExists(gameDTO.TournamentId)))
+            return BadRequest($"Tournament with Id {gameDTO.TournamentId} not found");
 
         var game = _mapper.Map<Game>(gameDTO);
         game.Id = id;
-        _unitOfWork.GameRepository.Update(game);
+        _repository.Update(game);
 
         try
         {
@@ -61,8 +64,11 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     [HttpPost]
     public async Task<ActionResult<GameWithIdDTO>> PostGame(GamePostDTO gameDTO)
     {
+        if (!(await TournamentExists(gameDTO.TournamentId)))
+            return BadRequest($"Tournament with Id {gameDTO.TournamentId} not found");
+
         var game = _mapper.Map<Game>(gameDTO);
-        _unitOfWork.GameRepository.Add(game);
+        _repository.Add(game);
         await _unitOfWork.CompleteAsync();
         var gameOut = _mapper.Map<GameWithIdDTO>(game);
         return CreatedAtAction(nameof(GetGameById), new { id = gameOut.Id }, gameOut);
@@ -72,11 +78,11 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGame(int id)
     {
-        var game = await _unitOfWork.GameRepository.GetAsync(id);
+        var game = await _repository.GetAsync(id);
         if (game is null)
             return NotFound();
 
-        _unitOfWork.GameRepository.Remove(game);
+        _repository.Remove(game);
         await _unitOfWork.CompleteAsync();
         return NoContent();
     }
@@ -84,21 +90,25 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     [HttpPatch("{id}")]
     public async Task<ActionResult<GameWithIdDTO>> PatchGame(int id, JsonPatchDocument<GamePostDTO> patchForDTO)
     {
-        var game = await _unitOfWork.GameRepository.GetAsync(id);
+        var game = await _repository.GetAsync(id);
         if (game is null)
             return NotFound();
-
 
         var patch = _mapper.Map<JsonPatchDocument<Game>>(patchForDTO);
         patch.ApplyTo(game, ModelState);
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+        if (!(await TournamentExists(game.TournamentId)))
+            return BadRequest($"Tournament with Id {game.TournamentId} not found");
 
-        _unitOfWork.GameRepository.Update(game);
+        _repository.Update(game);
         await _unitOfWork.CompleteAsync();
         return new ObjectResult(_mapper.Map<GameWithIdDTO>(game));
     }
 
     private async Task<bool> GameExists(int id) =>
-        await _unitOfWork.GameRepository.AnyAsync(id);
+        await _repository.AnyAsync(id);
+
+    private async Task<bool> TournamentExists(int id) =>
+        await _unitOfWork.TournamentRepository.AnyAsync(id);
 }
