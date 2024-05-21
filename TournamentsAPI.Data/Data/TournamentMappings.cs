@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using TournamentsAPI.Core.DTOs;
 using TournamentsAPI.Core.Entities;
 
@@ -16,5 +18,7 @@ public class TournamentMappings : Profile
             .ReverseMap();
         CreateMap<Game, GameWithIdDTO>()
             .ReverseMap();
+        CreateMap<JsonPatchDocument<TournamentPostDTO>, JsonPatchDocument<Tournament>>();
+        CreateMap<Operation<TournamentPostDTO>, Operation<Tournament>>();
     }
 }

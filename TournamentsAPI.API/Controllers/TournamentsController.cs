@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TournamentsAPI.Core.DTOs;
@@ -51,7 +52,7 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
             if (!(await TournamentExists(id)))
                 return NotFound();
             else
-                throw;
+                return StatusCode(500);
         }
 
         return NoContent();
@@ -80,6 +81,24 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
         _unitOfWork.TournamentRepository.Remove(tournament);
         await _unitOfWork.CompleteAsync();
         return NoContent();
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<ActionResult<TournamentWithIdDTO>> PatchTournament(int id, JsonPatchDocument<TournamentPostDTO> patchForDTO)
+    {
+        var tournament = await _unitOfWork.TournamentRepository.GetAsync(id);
+        if (tournament is null)
+            return NotFound();
+
+
+        var patch = _mapper.Map<JsonPatchDocument<Tournament>>(patchForDTO);
+        patch.ApplyTo(tournament, ModelState);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        _unitOfWork.TournamentRepository.Update(tournament);
+        await _unitOfWork.CompleteAsync();
+        return new ObjectResult(_mapper.Map<TournamentWithIdDTO>(tournament));
     }
 
     private async Task<bool> TournamentExists(int id) =>
