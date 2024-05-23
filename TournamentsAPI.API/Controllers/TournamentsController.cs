@@ -21,15 +21,17 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 
     // GET: api/Tournaments
     [HttpGet]
-    public async Task<ActionResult<(IEnumerable<TournamentWithIdDTO>, PaginationMetadata)>> GetAllTournaments(
+    public async Task<ActionResult<IEnumerable<TournamentWithIdDTO>>> GetAllTournaments(
         [FromQuery] bool sort = true,
         [FromQuery] int currentPage = 1,
-        [FromQuery] int pageSize = DefaultPageSize)
+        [FromQuery] int pageSize = DefaultPageSize,
+        [FromQuery] string? filterTitle = null)
     {
         currentPage = Math.Max(currentPage, 1);
         pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
 
-        var (tournaments, paginationMetadata) = await _repository.GetAllAsync(sort, currentPage, pageSize);
+        var (tournaments, paginationMetadata) = await _repository.GetAllAsync(
+            sort, currentPage, pageSize, filterTitle);
 
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
@@ -38,7 +40,9 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
 
     // GET: api/Tournaments/5
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTournamentById([FromRoute] int id, [FromQuery] bool includeGames = false)
+    public async Task<IActionResult> GetTournamentById(
+        [FromRoute] int id,
+        [FromQuery] bool includeGames = false)
     {
         var tournament = await _repository.GetAsync(id, includeGames);
         if (tournament is null)
@@ -53,7 +57,9 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     // PUT: api/Tournaments/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutTournament([FromRoute] int id, [FromBody] TournamentPostDTO tournamentDTO)
+    public async Task<IActionResult> PutTournament(
+        [FromRoute] int id,
+        [FromBody] TournamentPostDTO tournamentDTO)
     {
         if (!(await TournamentExists(id)))
             return NotFound();
@@ -103,7 +109,9 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     }
 
     [HttpPatch("{id}")]
-    public async Task<ActionResult<TournamentWithIdDTO>> PatchTournament([FromRoute] int id, [FromBody] JsonPatchDocument<TournamentPostDTO> patchForDTO)
+    public async Task<ActionResult<TournamentWithIdDTO>> PatchTournament(
+        [FromRoute] int id,
+        [FromBody] JsonPatchDocument<TournamentPostDTO> patchForDTO)
     {
         var tournament = await _repository.GetAsync(id, includeGames: false);
         if (tournament is null)

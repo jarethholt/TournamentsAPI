@@ -17,11 +17,13 @@ public class GameRepository(TournamentsContext context) : IGameRepository
         await _dbset.AnyAsync(g => g.Id == id);
 
     public async Task<(IEnumerable<Game>, PaginationMetadata)> GetAllAsync(
-        bool sort, int currentPage, int pageSize)
+        bool sort, int currentPage, int pageSize, string? filterTitle)
     {
         IQueryable<Game> query = _dbset;
         if (sort)
             query = query.OrderBy(g => g.Time);
+        if (!string.IsNullOrWhiteSpace(filterTitle))
+            query = query.Where(g => g.Title.Contains(filterTitle.Trim()));
 
         var totalItemCount = await query.CountAsync();
         PaginationMetadata paginationMetadata = new(totalItemCount, pageSize, currentPage);
@@ -34,11 +36,13 @@ public class GameRepository(TournamentsContext context) : IGameRepository
     }
 
     public async Task<(IEnumerable<Game>, PaginationMetadata)> GetAllFromTournament(
-        int tournamentId, bool sort, int currentPage, int pageSize)
+        int tournamentId, bool sort, int currentPage, int pageSize, string? filterTitle)
     {
         IQueryable<Game> query = _dbset.Where(g => g.TournamentId == tournamentId);
         if (sort)
             query = query.OrderBy(g => g.Time);
+        if (!string.IsNullOrWhiteSpace(filterTitle))
+            query = query.Where(g => g.Title.Contains(filterTitle.Trim()));
 
         var totalItemCount = await query.CountAsync();
         PaginationMetadata paginationMetadata = new(totalItemCount, pageSize, currentPage);

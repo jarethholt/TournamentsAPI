@@ -24,12 +24,13 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllGames(
         [FromQuery] bool sort = true,
         [FromQuery] int currentPage = 1,
-        [FromQuery] int pageSize = DefaultPageSize)
+        [FromQuery] int pageSize = DefaultPageSize,
+        [FromQuery] string? filterTitle = null)
     {
         currentPage = Math.Max(currentPage, 1);
         pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
 
-        var (games, paginationMetadata) = await _repository.GetAllAsync(sort, currentPage, pageSize);
+        var (games, paginationMetadata) = await _repository.GetAllAsync(sort, currentPage, pageSize, filterTitle);
 
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
@@ -41,12 +42,13 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
         [FromRoute] int tournamentId,
         [FromQuery] bool sort = true,
         [FromQuery] int currentPage = 1,
-        [FromQuery] int pageSize = DefaultPageSize)
+        [FromQuery] int pageSize = DefaultPageSize,
+        [FromQuery] string? filterTitle = null)
     {
         currentPage = Math.Max(currentPage, 1);
         pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
 
-        var (games, paginationMetadata) = await _repository.GetAllFromTournament(tournamentId, sort, currentPage, pageSize);
+        var (games, paginationMetadata) = await _repository.GetAllFromTournament(tournamentId, sort, currentPage, pageSize, filterTitle);
 
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
@@ -129,7 +131,9 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     }
 
     [HttpPatch("{id}")]
-    public async Task<ActionResult<GameWithIdDTO>> PatchGame([FromRoute] int id, [FromBody] JsonPatchDocument<GamePostDTO> patchForDTO)
+    public async Task<ActionResult<GameWithIdDTO>> PatchGame(
+        [FromRoute] int id,
+        [FromBody] JsonPatchDocument<GamePostDTO> patchForDTO)
     {
         var game = await _repository.GetByIdAsync(id);
         if (game is null)

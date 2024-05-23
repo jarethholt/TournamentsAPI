@@ -17,11 +17,13 @@ public class TournamentRepository(TournamentsContext context) : ITournamentRepos
         await _dbset.AnyAsync(t => t.Id == id);
 
     public async Task<(IEnumerable<Tournament>, PaginationMetadata)> GetAllAsync(
-        bool sort, int currentPage, int pageSize)
+        bool sort, int currentPage, int pageSize, string? filterTitle)
     {
         IQueryable<Tournament> query = _dbset;
         if (sort)
             query = query.OrderBy(t => t.StartDate);
+        if (!string.IsNullOrWhiteSpace(filterTitle))
+            query = query.Where(t => t.Title.Contains(filterTitle.Trim()));
 
         var totalItemCount = await query.CountAsync();
         PaginationMetadata paginationMetadata = new(totalItemCount, pageSize, currentPage);

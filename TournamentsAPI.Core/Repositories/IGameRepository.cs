@@ -5,9 +5,9 @@ namespace TournamentsAPI.Core.Repositories;
 public interface IGameRepository
 {
     Task<(IEnumerable<Game>, PaginationMetadata)> GetAllAsync(
-        bool sort, int currentPage, int pageSize);
+        bool sort, int currentPage, int pageSize, string? filterTitle);
     Task<(IEnumerable<Game>, PaginationMetadata)> GetAllFromTournament(
-        int tournamentId, bool sort, int currentPage, int pageSize);
+        int tournamentId, bool sort, int currentPage, int pageSize, string? filterTitle);
     Task<Game?> GetByIdAsync(int id);
     Task<Game?> GetByTitleAsync(string title);
     Task<bool> AnyAsync(int id);
