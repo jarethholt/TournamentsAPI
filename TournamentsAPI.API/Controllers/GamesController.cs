@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using TournamentsAPI.Core.DTOs;
 using TournamentsAPI.Core.Entities;
 using TournamentsAPI.Core.Repositories;
@@ -15,15 +16,42 @@ public class GamesController(IUnitOfWork unitOfWork, IMapper mapper) : Controlle
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
     private readonly IGameRepository _repository = unitOfWork.GameRepository;
+    const int MaxPageSize = 20;
+    const int DefaultPageSize = 5;
 
     // GET: api/Games
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllGames([FromQuery] bool sort = true) =>
-        Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _repository.GetAllAsync(sort)));
+    public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllGames(
+        [FromQuery] bool sort = true,
+        [FromQuery] int currentPage = 1,
+        [FromQuery] int pageSize = DefaultPageSize)
+    {
+        currentPage = Math.Max(currentPage, 1);
+        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+
+        var (games, paginationMetadata) = await _repository.GetAllAsync(sort, currentPage, pageSize);
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+
+        return Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(games));
+    }
 
     [HttpGet("Tournament/{tournamentId:int}")]
-    public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllFromTournament([FromRoute] int tournamentId, [FromQuery] bool sort = true) =>
-        Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(await _repository.GetAllFromTournament(tournamentId, sort)));
+    public async Task<ActionResult<IEnumerable<GameWithIdDTO>>> GetAllFromTournament(
+        [FromRoute] int tournamentId,
+        [FromQuery] bool sort = true,
+        [FromQuery] int currentPage = 1,
+        [FromQuery] int pageSize = DefaultPageSize)
+    {
+        currentPage = Math.Max(currentPage, 1);
+        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+
+        var (games, paginationMetadata) = await _repository.GetAllFromTournament(tournamentId, sort, currentPage, pageSize);
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+
+        return Ok(_mapper.Map<IEnumerable<GameWithIdDTO>>(games));
+    }
 
     // GET: api/Games/5
     [HttpGet("{id:int}")]

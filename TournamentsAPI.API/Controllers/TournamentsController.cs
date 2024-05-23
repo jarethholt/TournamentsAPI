@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using TournamentsAPI.Core.DTOs;
 using TournamentsAPI.Core.Entities;
 using TournamentsAPI.Core.Repositories;
@@ -15,11 +16,25 @@ public class TournamentsController(IUnitOfWork unitOfWork, IMapper mapper) : Con
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
     private readonly ITournamentRepository _repository = unitOfWork.TournamentRepository;
+    const int MaxPageSize = 5;
+    const int DefaultPageSize = 2;
 
     // GET: api/Tournaments
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TournamentWithIdDTO>>> GetAllTournaments([FromQuery] bool sort = true) =>
-        Ok(_mapper.Map<IEnumerable<TournamentWithIdDTO>>(await _repository.GetAllAsync(sort)));
+    public async Task<ActionResult<(IEnumerable<TournamentWithIdDTO>, PaginationMetadata)>> GetAllTournaments(
+        [FromQuery] bool sort = true,
+        [FromQuery] int currentPage = 1,
+        [FromQuery] int pageSize = DefaultPageSize)
+    {
+        currentPage = Math.Max(currentPage, 1);
+        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+
+        var (tournaments, paginationMetadata) = await _repository.GetAllAsync(sort, currentPage, pageSize);
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+
+        return Ok(_mapper.Map<IEnumerable<TournamentWithIdDTO>>(tournaments));
+    }
 
     // GET: api/Tournaments/5
     [HttpGet("{id}")]

@@ -4,8 +4,10 @@ namespace TournamentsAPI.Core.Repositories;
 
 public interface IGameRepository
 {
-    Task<IEnumerable<Game>> GetAllAsync(bool sort);
-    Task<IEnumerable<Game>> GetAllFromTournament(int tournamentId, bool sort);
+    Task<(IEnumerable<Game>, PaginationMetadata)> GetAllAsync(
+        bool sort, int currentPage, int pageSize);
+    Task<(IEnumerable<Game>, PaginationMetadata)> GetAllFromTournament(
+        int tournamentId, bool sort, int currentPage, int pageSize);
     Task<Game?> GetByIdAsync(int id);
     Task<Game?> GetByTitleAsync(string title);
     Task<bool> AnyAsync(int id);

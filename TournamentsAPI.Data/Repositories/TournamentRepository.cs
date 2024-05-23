@@ -16,12 +16,21 @@ public class TournamentRepository(TournamentsContext context) : ITournamentRepos
     public async Task<bool> AnyAsync(int id) =>
         await _dbset.AnyAsync(t => t.Id == id);
 
-    public async Task<IEnumerable<Tournament>> GetAllAsync(bool sort)
+    public async Task<(IEnumerable<Tournament>, PaginationMetadata)> GetAllAsync(
+        bool sort, int currentPage, int pageSize)
     {
         IQueryable<Tournament> query = _dbset;
         if (sort)
             query = query.OrderBy(t => t.StartDate);
-        return await query.ToListAsync();
+
+        var totalItemCount = await query.CountAsync();
+        PaginationMetadata paginationMetadata = new(totalItemCount, pageSize, currentPage);
+
+        var collection = await query
+            .Skip(pageSize * (currentPage - 1))
+            .Take(pageSize)
+            .ToListAsync();
+        return (collection, paginationMetadata);
     }
 
     public async Task<Tournament?> GetAsync(int id, bool includeGames = false)
